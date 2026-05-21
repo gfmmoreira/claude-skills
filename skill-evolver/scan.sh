@@ -111,9 +111,12 @@ if [[ -d "$FACETS_DIR" ]]; then
   done
 fi
 
-# PERSONALIZE THESE: phrases below are tuned to one user's vocabulary.
+# PERSONALIZE THESE: the phrases below are tuned to one user's vocabulary.
 # Replace or extend with your own correction/frustration phrases.
-FRUSTRATION_RE="that'?s a lie|cut that crap|you invented|what do you mean you invented|quite shit|wtf|this sucks|you didn'?t check|you never (checked|read|ran|opened)|stop doing|don'?t do that|no[,.]? i (want|asked|said|need)|i said|i asked for"
+FRUSTRATION_RE="that'?s a lie|cut that crap|you invented|what do you mean you invented|quite shit|you didn'?t check|you never (checked|read|ran|opened)|stop doing|don'?t do that|no[,.]? i (want|asked|said|need)|i said|i asked for"
+
+# General negative sentiment signals (source: github.com/alex000kim/claude-code)
+NEGATIVE_RE="wtf|wth|ffs|omfg|shit(ty|tiest)?|dumbass|horrible|awful|piss(ed|ing)? off|piece of (shit|crap|junk)|what the (fuck|hell)|fucking? (broken|useless|terrible|awful|horrible)|fuck you|screw (this|you)|so frustrating|this sucks|damn it"
 CORRECTION_RE="actually[,.]? (it|that|you)|you missed|you (skipped|ignored|forgot)|that'?s not what|you're wrong|that'?s wrong"
 ORDER_RE="explain (first|before|it first)|concept(ual)? (first|before)|don'?t (search|read|use|open|launch|run) (yet|first|before)|i (just )?wanted (you to )?explain|before (you )?implement|no tools"
 
@@ -153,7 +156,7 @@ for project_dir in "$PROJECTS_DIR"/*/; do
         root_cause="fabrication"
       elif echo "$lower_text" | grep -qiE "$ORDER_RE"; then
         root_cause="instruction_order"
-      elif echo "$lower_text" | grep -qiE "$FRUSTRATION_RE|$CORRECTION_RE"; then
+      elif echo "$lower_text" | grep -qiE "$FRUSTRATION_RE|$CORRECTION_RE|$NEGATIVE_RE"; then
         root_cause="other_frustration"
       fi
       [[ -z "$root_cause" ]] && continue
