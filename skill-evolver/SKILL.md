@@ -1,8 +1,8 @@
 ---
 name: skill-evolver
-version: 1.0.0
+version: 1.1.0
 description: "Read your Claude Code transcripts for moments where you corrected or pushed back on Claude, find the recurring failure patterns, and propose concrete rule changes to ~/.claude/CLAUDE.md. Use when asked to self-improve, find failure patterns, or evolve instructions."
-argument-hint: "[--days N]"
+argument-hint: "[days, default 30]"
 allowed-tools: Bash Read Write
 ---
 
@@ -15,8 +15,9 @@ You are analyzing your own failure patterns to propose concrete, evidence-backed
 1. Run the scanner to extract evidence from real transcripts
 2. Read the evidence file
 3. Cluster into three root causes only
-4. Propose up to 3 upgrades, each with: evidence, patch, and regression prompt
-5. Write proposal files — do NOT modify any config files directly
+4. Report discarded evidence counts
+5. Propose up to 3 upgrades, each with: evidence, patch, and regression prompt
+6. Write proposal files — do NOT modify any config files directly
 
 ---
 
@@ -50,7 +51,7 @@ For each accepted proposal, note its root cause and acceptance date — you will
 
 ---
 
-## Step 3 — Cluster evidence
+## Step 3 — Cluster evidence and report discards
 
 Group evidence moments into these three root causes only. Discard anything that does not fit cleanly.
 
@@ -70,7 +71,17 @@ cluster_score =
   + (explicit_frustration_phrase_count * 1)
 ```
 
-Only surface clusters with score ≥ 6 AND at least 2 incidents. If nothing meets threshold, say so and stop.
+Only surface clusters with score >= 6 AND at least 2 incidents. If nothing meets threshold, say so and stop.
+
+**Always report discarded evidence before proposing upgrades:**
+
+```
+Discarded evidence: N moments did not fit the 3 supported root causes.
+  - other_frustration: X
+  - unmatched: Y
+```
+
+If `other_frustration` has 3+ incidents across 2+ sessions, flag it: "other_frustration may warrant a new root cause category."
 
 For each qualifying cluster, check whether an accepted proposal already targets the same root cause:
 
@@ -99,7 +110,7 @@ For each qualifying cluster (max 3, ordered by score descending):
 
 **Patch target:** `~/.claude/CLAUDE.md`
 
-**Proposed addition** (≤ 10 lines, under the most relevant existing section):
+**Proposed addition** (<= 10 lines, under the most relevant existing section):
 ```diff
 + [exact text to add]
 ```
@@ -148,7 +159,7 @@ Then write a summary report to `~/.claude/evolver/reports/YYYY-MM-DD-summary.md`
 
 ## Step 6 — Present to user
 
-Show each upgrade in the format from Step 4. End with:
+Show the discard report first, then each upgrade in the format from Step 4. End with:
 
 ```
 Proposal files written to ~/.claude/evolver/proposals/
