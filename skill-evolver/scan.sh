@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+ #!/usr/bin/env zsh
 # Scans Claude Code session data for correction/frustration moments.
 #
 # Primary source: ~/.claude/usage-data/facets/ (pre-classified by /insights)
@@ -10,15 +10,19 @@ set -uo pipefail
 
 DAYS=30
 OUT_DIR="$HOME/.claude/evolver/raw"
-TODAY=$(date +%Y-%m-%d)
-OUT_FILE="$OUT_DIR/evidence-$TODAY.jsonl"
+OUT_FILE="$OUT_DIR/evidence-$(date +%Y-%m-%d-%H%M%S).jsonl"
 FACETS_DIR="$HOME/.claude/usage-data/facets"
 SESSION_META_DIR="$HOME/.claude/usage-data/session-meta"
 PROJECTS_DIR="$HOME/.claude/projects"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --days) DAYS="$2"; shift 2 ;;
+    --days)
+      [[ $# -ge 2 && "$2" =~ '^[0-9]+$' ]] || {
+        echo "Error: --days requires a positive integer" >&2
+        exit 2
+      }
+      DAYS="$2"; shift 2 ;;
     --out)  OUT_FILE="$2"; shift 2 ;;
     *) echo "Unknown arg: $1" >&2; exit 1 ;;
   esac
@@ -34,7 +38,9 @@ map_friction_to_root_cause() {
   case "$key" in
     fabricated_information|inaccurate_claim|unfounded_speculation)
       echo "fabrication" ;;
-    misunderstood_request|violated_user_preference|premature_assumptions)
+    premature_assumptions)
+      echo "premature_tool_use" ;;
+    misunderstood_request|violated_user_preference)
       echo "instruction_order" ;;
     wrong_approach|user_rejected_action|excessive_changes)
       echo "other_frustration" ;;
@@ -118,7 +124,11 @@ FRUSTRATION_RE="that'?s a lie|cut that crap|you invented|what do you mean you in
 # General negative sentiment signals (source: github.com/alex000kim/claude-code)
 NEGATIVE_RE="wtf|wth|ffs|omfg|shit(ty|tiest)?|dumbass|horrible|awful|piss(ed|ing)? off|piece of (shit|crap|junk)|what the (fuck|hell)|fucking? (broken|useless|terrible|awful|horrible)|fuck you|screw (this|you)|so frustrating|this sucks|damn it"
 CORRECTION_RE="actually[,.]? (it|that|you)|you missed|you (skipped|ignored|forgot)|that'?s not what|you're wrong|that'?s wrong"
-ORDER_RE="explain (first|before|it first)|concept(ual)? (first|before)|don'?t (search|read|use|open|launch|run) (yet|first|before)|i (just )?wanted (you to )?explain|before (you )?implement|no tools"
+ORDER_RE="before (you )?implement|wrong (repo|branch|language|format)|i told you|not what i asked"
+
+if [[ "$FACETS_COUNT" -eq 0 ]]; then
+  echo "Warning: no facets found or all stale. Falling back to raw transcript regex detection — results will be less accurate." >&2
+fi
 
 RAW_COUNT=0
 
@@ -154,6 +164,8 @@ for project_dir in "$PROJECTS_DIR"/*/; do
       root_cause=""
       if echo "$lower_text" | grep -qiE "lie|invented|you (said|claimed)|you didn'?t check|you never"; then
         root_cause="fabrication"
+      elif echo "$lower_text" | grep -qiE "explain (first|before|it first)|concept(ual)? (first|before)|don'?t (search|read|use|open|launch|run) (yet|first|before)|i (just )?wanted (you to )?explain|no tools"; then
+        root_cause="premature_tool_use"
       elif echo "$lower_text" | grep -qiE "$ORDER_RE"; then
         root_cause="instruction_order"
       elif echo "$lower_text" | grep -qiE "$FRUSTRATION_RE|$CORRECTION_RE|$NEGATIVE_RE"; then
