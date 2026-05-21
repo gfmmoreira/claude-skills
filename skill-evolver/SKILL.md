@@ -70,7 +70,7 @@ cluster_score =
   + (explicit_frustration_phrase_count * 1)
 ```
 
-Only surface clusters with score >= 6 AND at least 2 incidents. If nothing meets threshold, say so and stop.
+Only surface clusters with score ≥ 6 AND at least 2 incidents. If nothing meets threshold, say so and stop.
 
 For each qualifying cluster, check whether an accepted proposal already targets the same root cause:
 
@@ -99,7 +99,10 @@ For each qualifying cluster (max 3, ordered by score descending):
 
 **Patch target:** `~/.claude/CLAUDE.md`
 
-**Proposed addition** (<= 10 lines, under the most relevant existing section):
+**Proposed addition** (≤ 10 lines, under the most relevant existing section):
+```diff
++ [exact text to add]
+```
 
 **Regression prompt:**
 > [A short prompt that would have triggered this failure. Be specific — generic prompts are useless.]
@@ -119,7 +122,7 @@ For each upgrade, write a proposal file:
 ```
 
 File format:
-```
+```markdown
 # Upgrade: [short name]
 Date: YYYY-MM-DD
 Root cause: [root cause]
