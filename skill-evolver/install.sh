@@ -18,7 +18,7 @@ cat > "${COMMANDS_DIR}/skill-evolver.md" << 'EOF'
 Run skill-evolver: read my Claude Code transcripts, find where I corrected Claude, and propose rule changes based on what actually went wrong.
 
 Steps:
-1. Run `~/.claude/skills/skill-evolver/scan.sh --days ${ARGUMENTS:-30}` and capture the evidence file path from stdout
+1. Run `/bin/zsh ~/.claude/skills/skill-evolver/scan.sh --days ${ARGUMENTS:-30}` and capture the evidence file path from stdout
 2. Follow the full SKILL.md at `~/.claude/skills/skill-evolver/SKILL.md`
 EOF
 
