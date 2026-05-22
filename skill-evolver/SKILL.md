@@ -34,7 +34,7 @@ If the count is 0 (no recent facets), run `/insights` now before continuing. The
 Once facets are confirmed fresh, run the scanner:
 
 ```bash
-~/.claude/skills/skill-evolver/scan.sh --days {{days|30}}
+/bin/zsh ~/.claude/skills/skill-evolver/scan.sh --days {{days|30}}
 ```
 
 Read the output path from stdout. Then read the evidence file.
