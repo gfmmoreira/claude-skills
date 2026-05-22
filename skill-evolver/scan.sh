@@ -1,4 +1,4 @@
- #!/usr/bin/env zsh
+ #!/bin/zsh
 # Scans Claude Code session data for correction/frustration moments.
 #
 # Primary source: ~/.claude/usage-data/facets/ (pre-classified by /insights)
